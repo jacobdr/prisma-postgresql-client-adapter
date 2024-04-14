@@ -1,0 +1,190 @@
+lockfileVersion: "6.0"
+
+settings:
+    autoInstallPeers: true
+    excludeLinksFromLockfile: false
+
+dependencies:
+    "@prisma/driver-adapter-utils":
+        specifier: ^5.12.1
+        version: 5.12.1
+    postgres-array:
+        specifier: ^3.0.2
+        version: 3.0.2
+
+devDependencies:
+    "@types/node":
+        specifier: ^20.12.7
+        version: 20.12.7
+    postgresql-client:
+        specifier: ^2.10.6
+        version: 2.10.6
+    prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+    typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+
+packages:
+    /@prisma/debug@5.12.1:
+        resolution:
+            {
+                integrity: sha512-kd/wNsR0klrv79o1ITsbWxYyh4QWuBidvxsXSParPsYSu0ircUmNk3q4ojsgNc3/81b0ozg76iastOG43tbf8A==,
+            }
+        dev: false
+
+    /@prisma/driver-adapter-utils@5.12.1:
+        resolution:
+            {
+                integrity: sha512-s5EHANHIyWID/3WLNYn3wy1SUGC2OFH2thYriq+sKo4GZxEduX9oraOVlPruZZBt/roN9ojZcph4R2oecWzfXg==,
+            }
+        dependencies:
+            "@prisma/debug": 5.12.1
+        dev: false
+
+    /@types/node@20.12.7:
+        resolution:
+            {
+                integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==,
+            }
+        dependencies:
+            undici-types: 5.26.5
+        dev: true
+
+    /doublylinked@2.5.4:
+        resolution:
+            {
+                integrity: sha512-jBCKDnFkEHJRjQvYEl5N9VngRV8ypHgw6a52OK4VN57eV2r2rYvgOx9uABdY78INNoW7S6auULp+KBVm/jfYqw==,
+            }
+        engines: { node: ">= 10.0" }
+        dev: true
+
+    /lightning-pool@4.2.2:
+        resolution:
+            {
+                integrity: sha512-KW0Df0IbjNLxy5wAsdErTKYtHGwefLRQseHNksEctyaL7gtRwJT0nqLa2uiRdNYDwKSnZtqOjSjUNtfxmfH1qw==,
+            }
+        dependencies:
+            doublylinked: 2.5.4
+            putil-promisify: 1.10.1
+        dev: true
+
+    /obuf@1.1.2:
+        resolution:
+            {
+                integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==,
+            }
+        dev: true
+
+    /postgres-array@3.0.2:
+        resolution:
+            {
+                integrity: sha512-6faShkdFugNQCLwucjPcY5ARoW1SlbnrZjmGl0IrrqewpvxvhSLHimCVzqeuULCbG0fQv7Dtk1yDbG3xv7Veog==,
+            }
+        engines: { node: ">=12" }
+        dev: false
+
+    /postgres-bytea@3.0.0:
+        resolution:
+            {
+                integrity: sha512-CNd4jim9RFPkObHSjVHlVrxoVQXz7quwNFpz7RY1okNNme49+sVyiTvTRobiLV548Hx/hb1BG+iE7h9493WzFw==,
+            }
+        engines: { node: ">= 6" }
+        dependencies:
+            obuf: 1.1.2
+        dev: true
+
+    /postgresql-client@2.10.6:
+        resolution:
+            {
+                integrity: sha512-lKZ5Zwxx6VSclez7xB8L1MFE11qRmKGyI37KGJcFhfwz7weD3BM0Qzem7pmK2F8IMIVWWCXk8dB4Y+fzNt2CQw==,
+            }
+        engines: { node: ">=16.0", npm: ">=7.0.0" }
+        dependencies:
+            doublylinked: 2.5.4
+            lightning-pool: 4.2.2
+            postgres-bytea: 3.0.0
+            power-tasks: 1.7.3
+            putil-merge: 3.12.1
+            putil-promisify: 1.10.1
+            putil-varhelpers: 1.6.5
+        dev: true
+
+    /power-tasks@1.7.3:
+        resolution:
+            {
+                integrity: sha512-EnkjLfaX4PxFYHbUWyWzlE4I8SgctaW9jx4qQXrVRoELlqBXrxIMtuhHzRwsHv2qs1tO7efOcZa6/wDCdCjRfA==,
+            }
+        engines: { node: ">=16.0" }
+        dependencies:
+            doublylinked: 2.5.4
+            strict-typed-events: 2.3.3
+        dev: true
+
+    /prettier@3.2.5:
+        resolution:
+            {
+                integrity: sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==,
+            }
+        engines: { node: ">=14" }
+        hasBin: true
+        dev: true
+
+    /putil-merge@3.12.1:
+        resolution:
+            {
+                integrity: sha512-4clPyRkJPrd5zl98AP7I3JamyXbx0ixe2CnfvGwoTyWSr7Kslcv8weoKjfU4BMBifkWIRL54l4OrNe97pYcDwQ==,
+            }
+        engines: { node: ">= 10.0" }
+        dev: true
+
+    /putil-promisify@1.10.1:
+        resolution:
+            {
+                integrity: sha512-1jm0egJNrj5eBDRj15Cg08RNHDV91OVEHeeYjAFRcs663PXxFokndxcJAGbaO6CSErCTp8eTgC8vuOF+fvXIAA==,
+            }
+        engines: { node: ">= 14.0" }
+        dev: true
+
+    /putil-varhelpers@1.6.5:
+        resolution:
+            {
+                integrity: sha512-kyu+lE5xkc65ScgaIi6rNONLXeS7jGBxl1I0rzHVsFGAAQ45D/VkuEev+t09PFB943F+CqdWFLczH6ePk5TPAA==,
+            }
+        engines: { node: ">= 6.0" }
+        dev: true
+
+    /strict-typed-events@2.3.3:
+        resolution:
+            {
+                integrity: sha512-Vc8/N5giCVpO2n5BCskqDD9ns7RkdEq0pFd4yQk1ROULusJDbjORNvbtyEPxxK7Xqn9/NdW8XHLxv/PvUTgFsA==,
+            }
+        engines: { node: ">=16.0" }
+        dependencies:
+            putil-promisify: 1.10.1
+            ts-gems: 3.2.1
+        dev: true
+
+    /ts-gems@3.2.1:
+        resolution:
+            {
+                integrity: sha512-nAs9PugnuYpuvsvb8m4BAWzinmIKGdBecDaxs3PEI5m1fzijSVIVmP+TyGVD5yRpxsadpbBdPBI4RYgsF+inzw==,
+            }
+        dev: true
+
+    /typescript@5.4.5:
+        resolution:
+            {
+                integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==,
+            }
+        engines: { node: ">=14.17" }
+        hasBin: true
+        dev: true
+
+    /undici-types@5.26.5:
+        resolution:
+            {
+                integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==,
+            }
+        dev: true
