@@ -129,13 +129,14 @@ jobs:
                   make docker-dependencies
                   if ./scripts/wait-for-it.sh -t 15 localhost:5432; then
                     echo "Dependencies are ready"
+                    docker ps -a
                     docker compose logs
                   else
                     echo "Database not online on localhost:5432"
+                    docker ps -a
                     docker compose logs
                     exit 101
                   fi
-
             - name: Test
               run: |
                   pnpm run test
