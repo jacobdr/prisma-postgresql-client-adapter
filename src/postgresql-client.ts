@@ -1,4 +1,12 @@
 /* eslint-disable @typescript-eslint/require-await */
+import { name as packageName } from "../package.json";
+import {
+    // fixArrayBufferValues,
+    UnsupportedNativeDataType,
+    convertDataTypes,
+    fieldToColumnType,
+} from "./conversion.js";
+import { isDatabaseError } from "./database-error.js";
 import type {
     ColumnType,
     ConnectionInfo,
@@ -11,13 +19,7 @@ import type {
     TransactionOptions,
 } from "@prisma/driver-adapter-utils";
 import { Debug, err, ok } from "@prisma/driver-adapter-utils";
-
 import * as pg from "postgresql-client";
-import { CommandResult } from "postgresql-client";
-// @ts-ignore: this is used to avoid the `Module '"<path>/node_modules/@types/pg/index"' has no default export.` error.
-
-import { name as packageName } from "../package.json";
-//   import { fieldToColumnType, fixArrayBufferValues, UnsupportedNativeDataType } from './conversion'
 
 const debug = Debug("prisma:driver-adapter:postgresql-client");
 
@@ -45,11 +47,20 @@ class PgQueryable<ClientT extends StdClient | TransactionClient> implements Quer
         }
 
         const { fields, rows } = res.value;
-        const columnNames = fields.map((field) => field.name);
+        if (!fields) {
+            debug("Error no fields returned in query result: %O", res.value);
+            throw new Error("No fields in result");
+        }
+        if (!rows) {
+            debug("Error no rows returned in query result: %O", res.value);
+            throw new Error("No rows in result");
+        }
+
+        const columnNames = fields.map((field) => field.fieldName);
         let columnTypes: ColumnType[] = [];
 
         try {
-            columnTypes = fields.map((field) => fieldToColumnType(field.dataTypeID));
+            columnTypes = fields.map((field) => fieldToColumnType(field.dataTypeId));
         } catch (e) {
             if (e instanceof UnsupportedNativeDataType) {
                 return err({
@@ -60,10 +71,14 @@ class PgQueryable<ClientT extends StdClient | TransactionClient> implements Quer
             throw e;
         }
 
+        const convertedRows = convertDataTypes(rows, fields);
+        const debugCtx = { columnNames, columnTypes, fields, rows, convertedRows };
+        debug("Context for debugging row conversions: %O", debugCtx);
+
         return ok({
             columnNames,
             columnTypes,
-            rows,
+            rows: convertedRows,
         });
     }
 
@@ -77,7 +92,10 @@ class PgQueryable<ClientT extends StdClient | TransactionClient> implements Quer
         debug(`${tag} %O`, query);
 
         // Note: `rowsAffected` can sometimes be null (e.g., when executing `"BEGIN"`)
-        return (await this.performIO(query)).map(({ rowCount: rowsAffected }) => rowsAffected ?? 0);
+        const result = await this.performIO(query);
+        return result.map(({ rowsAffected }) => {
+            return rowsAffected ?? 0;
+        });
     }
 
     /**
@@ -85,32 +103,39 @@ class PgQueryable<ClientT extends StdClient | TransactionClient> implements Quer
      * Should the query fail due to a connection error, the connection is
      * marked as unhealthy.
      */
-    private async performIO(query: Query): Promise<Result<pg.QueryArrayResult<any>>> {
+    private async performIO(query: Query): Promise<Result<pg.QueryResult>> {
         const { sql, args: values } = query;
 
         try {
             const result = await this.client.query(sql, { params: values });
-            return ok(result.rows);
-        } catch (e) {
-            const b = pg.pro;
-            const error = e as Error;
+            if (!result.rows) {
+                // TODO: Fix this
+                throw new Error("No rows in the result set");
+                // return err({
+                //     kind: "Postgres",
+                //     code: e.code,
+                //     severity: e.severity,
+                //     message: e.message,
+                //     detail: e.detail,
+                //     column: e.column,
+                //     hint: e.hint,
+                // });
+            }
+            return ok(result);
+        } catch (error) {
             debug("Error in performIO: %O", error);
-            if (
-                e &&
-                typeof e.code === "string" &&
-                typeof e.severity === "string" &&
-                typeof e.message === "string"
-            ) {
+            if (isDatabaseError(error)) {
                 return err({
                     kind: "Postgres",
-                    code: e.code,
-                    severity: e.severity,
-                    message: e.message,
-                    detail: e.detail,
-                    column: e.column,
-                    hint: e.hint,
+                    code: error.code || "unknown",
+                    severity: error.severity || "unknown",
+                    message: error.message,
+                    detail: error.detail,
+                    column: error.column,
+                    hint: error.hint,
                 });
             }
+
             throw error;
         }
     }
@@ -143,17 +168,18 @@ export type PrismaPgOptions = {
     schema?: string;
 };
 
+const IMPORT_ERROR_STRING = `PrismaPg must be initialized with an instance of Pool:
+import { Pool } from 'postgresql-client'
+const pool = new Pool({ connectionString: url })
+const adapter = new PrismaPg(pool)
+`;
 export class PrismaPg extends PgQueryable<StdClient> implements DriverAdapter {
     constructor(
         client: pg.Pool,
         private options?: PrismaPgOptions,
     ) {
         if (!(client instanceof pg.Pool)) {
-            throw new TypeError(`PrismaPg must be initialized with an instance of Pool:
-  import { Pool } from 'postgresql-client'
-  const pool = new Pool({ connectionString: url })
-  const adapter = new PrismaPg(pool)
-  `);
+            throw new TypeError(IMPORT_ERROR_STRING);
         }
         super(client);
     }

@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator dbml {
+    provider      = "prisma-dbml-generator"
+    // Set this to false -- table names are incorrect bu
+    // relations work properly. Caused by regression in
+    // https://github.com/notiz-dev/prisma-dbml-generator/issues/18
+    mapToDbSchema = "false"
+}
+
+// All types: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#model-field-scalar-types
+model KitchenSink {
+    id                String   @unique
+    is_valid          Boolean
+    count_int         Int
+    count_bingint     BigInt
+    count_float       Float
+    count_decimal     Decimal
+    datetime          DateTime
+    // postgres custom types
+    // https://www.prisma.io/docs/orm/overview/databases/postgresql#mapping-between-postgresql-database-column-types-to-prisma-orm-scalar-and-native-types
+    timestamp_tz      DateTime @db.Timestamptz()
+    time_without_zone DateTime @db.Time()
+    // This type is not supported by the driver
+    time_with_zone    DateTime @db.Timetz()
+
+    // Postgres user table is special -- so we need
+    // to rename it to app_users
+    @@map("kitchen_sink")
+}

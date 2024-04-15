@@ -2,16 +2,87 @@
  * This is copied from
  * https://github.com/prisma/prisma/blob/main/packages/adapter-pg/src/conversion.ts
  */
-import { type ColumnType, ColumnTypeEnum, JsonNullMarker } from "@prisma/driver-adapter-utils";
-// @ts-ignore: this is used to avoid the `Module '"<path>/node_modules/@types/pg/index"' has no default export.` error.
-import pg from "postgresql-client";
-import { parse as parseArray } from "postgres-array";
-
-const { types } = pg;
-const { builtins: ScalarColumnType, getTypeParser, setTypeParser } = types;
+import {
+    type ColumnType,
+    ColumnTypeEnum, // JsonNullMarker
+} from "@prisma/driver-adapter-utils";
+import { DateTime } from "luxon";
+import { DataTypeOIDs, type FieldInfo } from "postgresql-client";
 
 /**
- * PostgreSQL array column types (not defined in ScalarColumnType).
+ * This is a cast to get compatibility with the upstream
+ */
+type ICapitalizedNames = Uppercase<keyof typeof DataTypeOIDs>;
+type ICapitalizedDataTypeOIDs = { [key in ICapitalizedNames]: number };
+const INTERNAL_DATATYPE_OIDS: ICapitalizedDataTypeOIDs = Object.fromEntries(
+    Object.entries(DataTypeOIDs).map(([key, value]) => [
+        key.toUpperCase() as ICapitalizedNames,
+        value,
+    ]),
+) as ICapitalizedDataTypeOIDs;
+
+// import { parse as parseArray } from "postgres-array";
+
+// const { types } = pg;
+// const { builtins: DataTypeOIDs, getTypeParser, setTypeParser } = types;
+
+// const foo = pg.DataTypeOIDs
+
+/**
+ * Copies data, in the future maybe make this not functional?
+ */
+export function convertDataTypes(
+    multipleRowData: unknown[][],
+    columnTypes: FieldInfo[],
+): unknown[][] {
+    const convertedData = multipleRowData.map((singleRowData) => {
+        return singleRowData.map((columnValue, index) => {
+            const fieldInfo = columnTypes[index];
+            const prismaType = fieldToColumnType(fieldInfo.dataTypeId);
+            switch (prismaType) {
+                // TODO: Handle more precision here?
+                case ColumnTypeEnum.Time:
+                    // Is a string like -- 1970-01-01T16:47:00.000Z
+                    if (typeof columnValue === "string") {
+                        const timeStringPart = columnValue.slice(11, 19);
+                        return timeStringPart;
+                    }
+                    if (columnValue instanceof Date) {
+                        // https://github.com/prisma/prisma/blob/main/packages/adapter-neon/src/conversion.ts#L307C10-L307C28
+                        // Should be like: "08:00:00"
+                        // 1994-06-17T18:46:27.134Z
+                        const luxonDateTime = DateTime.fromJSDate(columnValue);
+                        const rezonedIntoIso = luxonDateTime.setZone("utc", {
+                            keepLocalTime: true,
+                        });
+                        const timeStringPart = rezonedIntoIso.toISO()!.slice(11, 19);
+                        return timeStringPart;
+                    }
+                    throw new Error("UNREACHABLE");
+                case ColumnTypeEnum.DateTime:
+                    if (!(columnValue instanceof Date)) {
+                        throw new Error("UNREACHABLE");
+                    }
+
+                    // TODO: Is this the correct logic?
+                    if (fieldInfo.dataTypeName === "timestamptz") {
+                        return columnValue.toISOString();
+                    }
+
+                    // return columnValue.toISOString();
+                    const luxonDateTime = DateTime.fromJSDate(columnValue);
+                    const rezonedIntoIso = luxonDateTime.setZone("utc", { keepLocalTime: true });
+                    return rezonedIntoIso.toISO();
+                default:
+                    return columnValue;
+            }
+        });
+    });
+    return convertedData;
+}
+
+/**
+ * PostgreSQL array column types (not defined in DataTypeOIDs).
  *
  * See the semantics of each of this code in:
  *   https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.dat
@@ -177,45 +248,45 @@ export class UnsupportedNativeDataType extends Error {
  */
 export function fieldToColumnType(fieldTypeId: number): ColumnType {
     switch (fieldTypeId) {
-        case ScalarColumnType["INT2"]:
-        case ScalarColumnType["INT4"]:
+        case INTERNAL_DATATYPE_OIDS["INT2"]:
+        case INTERNAL_DATATYPE_OIDS["INT4"]:
             return ColumnTypeEnum.Int32;
-        case ScalarColumnType["INT8"]:
+        case INTERNAL_DATATYPE_OIDS["INT8"]:
             return ColumnTypeEnum.Int64;
-        case ScalarColumnType["FLOAT4"]:
+        case INTERNAL_DATATYPE_OIDS["FLOAT4"]:
             return ColumnTypeEnum.Float;
-        case ScalarColumnType["FLOAT8"]:
+        case INTERNAL_DATATYPE_OIDS["FLOAT8"]:
             return ColumnTypeEnum.Double;
-        case ScalarColumnType["BOOL"]:
+        case INTERNAL_DATATYPE_OIDS["BOOL"]:
             return ColumnTypeEnum.Boolean;
-        case ScalarColumnType["DATE"]:
+        case INTERNAL_DATATYPE_OIDS["DATE"]:
             return ColumnTypeEnum.Date;
-        case ScalarColumnType["TIME"]:
-        case ScalarColumnType["TIMETZ"]:
+        case INTERNAL_DATATYPE_OIDS["TIME"]:
+            // case INTERNAL_DATATYPE_OIDS["TIMETZ"]:
             return ColumnTypeEnum.Time;
-        case ScalarColumnType["TIMESTAMP"]:
-        case ScalarColumnType["TIMESTAMPTZ"]:
+        case INTERNAL_DATATYPE_OIDS["TIMESTAMP"]:
+        case INTERNAL_DATATYPE_OIDS["TIMESTAMPTZ"]:
             return ColumnTypeEnum.DateTime;
-        case ScalarColumnType["NUMERIC"]:
-        case ScalarColumnType["MONEY"]:
+        case INTERNAL_DATATYPE_OIDS["NUMERIC"]:
+        case INTERNAL_DATATYPE_OIDS["MONEY"]:
             return ColumnTypeEnum.Numeric;
-        case ScalarColumnType["JSON"]:
-        case ScalarColumnType["JSONB"]:
+        case INTERNAL_DATATYPE_OIDS["JSON"]:
+        case INTERNAL_DATATYPE_OIDS["JSONB"]:
             return ColumnTypeEnum.Json;
-        case ScalarColumnType["UUID"]:
+        case INTERNAL_DATATYPE_OIDS["UUID"]:
             return ColumnTypeEnum.Uuid;
-        case ScalarColumnType["OID"]:
+        case INTERNAL_DATATYPE_OIDS["OID"]:
             return ColumnTypeEnum.Int64;
-        case ScalarColumnType["BPCHAR"]:
-        case ScalarColumnType["TEXT"]:
-        case ScalarColumnType["VARCHAR"]:
-        case ScalarColumnType["BIT"]:
-        case ScalarColumnType["VARBIT"]:
-        case ScalarColumnType["INET"]:
-        case ScalarColumnType["CIDR"]:
-        case ScalarColumnType["XML"]:
+        case INTERNAL_DATATYPE_OIDS["BPCHAR"]:
+        case INTERNAL_DATATYPE_OIDS["TEXT"]:
+        case INTERNAL_DATATYPE_OIDS["VARCHAR"]:
+        case INTERNAL_DATATYPE_OIDS["BIT"]:
+        case INTERNAL_DATATYPE_OIDS["VARBIT"]:
+        case INTERNAL_DATATYPE_OIDS["INET"]:
+        case INTERNAL_DATATYPE_OIDS["CIDR"]:
+        case INTERNAL_DATATYPE_OIDS["XML"]:
             return ColumnTypeEnum.Text;
-        case ScalarColumnType["BYTEA"]:
+        case INTERNAL_DATATYPE_OIDS["BYTEA"]:
             return ColumnTypeEnum.Bytes;
         case ArrayColumnType.INT2_ARRAY:
         case ArrayColumnType.INT4_ARRAY:
@@ -268,169 +339,169 @@ export function fieldToColumnType(fieldTypeId: number): ColumnType {
     }
 }
 
-function normalize_array(element_normalizer: (input: string) => string): (string) => string[] {
-    return (str) => parseArray(str, element_normalizer);
-}
+// function normalize_array(element_normalizer: (input: string) => string): (string) => string[] {
+//     return (str) => parseArray(str, element_normalizer);
+// }
 
-/****************************/
-/* Time-related data-types  */
-/****************************/
+// /****************************/
+// /* Time-related data-types  */
+// /****************************/
 
-function normalize_numeric(numeric: string): string {
-    return numeric;
-}
+// function normalize_numeric(numeric: string): string {
+//     return numeric;
+// }
 
-setTypeParser(ScalarColumnType.NUMERIC, normalize_numeric);
-setTypeParser(ArrayColumnType.NUMERIC_ARRAY, normalize_array(normalize_numeric));
+// setTypeParser(DataTypeOIDs.NUMERIC, normalize_numeric);
+// setTypeParser(ArrayColumnType.NUMERIC_ARRAY, normalize_array(normalize_numeric));
 
-/****************************/
-/* Time-related data-types  */
-/****************************/
+// /****************************/
+// /* Time-related data-types  */
+// /****************************/
 
-function normalize_date(date: string): string {
-    return date;
-}
+// function normalize_date(date: string): string {
+//     return date;
+// }
 
-function normalize_timestamp(time: string): string {
-    return time;
-}
+// function normalize_timestamp(time: string): string {
+//     return time;
+// }
 
-function normalize_timestampz(time: string): string {
-    return time.split("+")[0];
-}
+// function normalize_timestampz(time: string): string {
+//     return time.split("+")[0];
+// }
 
-/*
- * TIME, TIMETZ, TIME_ARRAY - converts value (or value elements) to a string in the format HH:mm:ss.f
- */
+// /*
+//  * TIME, TIMETZ, TIME_ARRAY - converts value (or value elements) to a string in the format HH:mm:ss.f
+//  */
 
-function normalize_time(time: string): string {
-    return time;
-}
+// function normalize_time(time: string): string {
+//     return time;
+// }
 
-function normalize_timez(time: string): string {
-    // Although it might be controversial, UTC is assumed in consistency with the behavior of rust postgres driver
-    // in quaint. See quaint/src/connector/postgres/conversion.rs
-    return time.split("+")[0];
-}
+// function normalize_timez(time: string): string {
+//     // Although it might be controversial, UTC is assumed in consistency with the behavior of rust postgres driver
+//     // in quaint. See quaint/src/connector/postgres/conversion.rs
+//     return time.split("+")[0];
+// }
 
-setTypeParser(ScalarColumnType.TIME, normalize_time);
-setTypeParser(ArrayColumnType.TIME_ARRAY, normalize_array(normalize_time));
-setTypeParser(ScalarColumnType.TIMETZ, normalize_timez);
+// setTypeParser(DataTypeOIDs.TIME, normalize_time);
+// setTypeParser(ArrayColumnType.TIME_ARRAY, normalize_array(normalize_time));
+// setTypeParser(DataTypeOIDs.TIMETZ, normalize_timez);
 
-/*
- * DATE, DATE_ARRAY - converts value (or value elements) to a string in the format YYYY-MM-DD
- */
+// /*
+//  * DATE, DATE_ARRAY - converts value (or value elements) to a string in the format YYYY-MM-DD
+//  */
 
-setTypeParser(ScalarColumnType.DATE, normalize_date);
-setTypeParser(ArrayColumnType.DATE_ARRAY, normalize_array(normalize_date));
+// setTypeParser(DataTypeOIDs.DATE, normalize_date);
+// setTypeParser(ArrayColumnType.DATE_ARRAY, normalize_array(normalize_date));
 
-/*
- * TIMESTAMP, TIMESTAMP_ARRAY - converts value (or value elements) to a string in the rfc3339 format
- * ex: 1996-12-19T16:39:57-08:00
- */
-setTypeParser(ScalarColumnType.TIMESTAMP, normalize_timestamp);
-setTypeParser(ArrayColumnType.TIMESTAMP_ARRAY, normalize_array(normalize_timestamp));
-setTypeParser(ScalarColumnType.TIMESTAMPTZ, normalize_timestampz);
+// /*
+//  * TIMESTAMP, TIMESTAMP_ARRAY - converts value (or value elements) to a string in the rfc3339 format
+//  * ex: 1996-12-19T16:39:57-08:00
+//  */
+// setTypeParser(DataTypeOIDs.TIMESTAMP, normalize_timestamp);
+// setTypeParser(ArrayColumnType.TIMESTAMP_ARRAY, normalize_array(normalize_timestamp));
+// setTypeParser(DataTypeOIDs.TIMESTAMPTZ, normalize_timestampz);
 
-/******************/
-/* Money handling */
-/******************/
+// /******************/
+// /* Money handling */
+// /******************/
 
-function normalize_money(money: string): string {
-    return money.slice(1);
-}
+// function normalize_money(money: string): string {
+//     return money.slice(1);
+// }
 
-setTypeParser(ScalarColumnType.MONEY, normalize_money);
-setTypeParser(ArrayColumnType.MONEY_ARRAY, normalize_array(normalize_money));
+// setTypeParser(DataTypeOIDs.MONEY, normalize_money);
+// setTypeParser(ArrayColumnType.MONEY_ARRAY, normalize_array(normalize_money));
 
-/*****************/
-/* JSON handling */
-/*****************/
+// /*****************/
+// /* JSON handling */
+// /*****************/
 
-/**
- * JsonNull are stored in JSON strings as the string "null", distinguishable from
- * the `null` value which is used by the driver to represent the database NULL.
- * By default, JSON and JSONB columns use JSON.parse to parse a JSON column value
- * and this will lead to serde_json::Value::Null in Rust, which will be interpreted
- * as DbNull.
- *
- * By converting "null" to JsonNullMarker, we can signal JsonNull in Rust side and
- * convert it to QuaintValue::Json(Some(Null)).
- */
-function toJson(json: string): unknown {
-    return json === "null" ? JsonNullMarker : JSON.parse(json);
-}
+// /**
+//  * JsonNull are stored in JSON strings as the string "null", distinguishable from
+//  * the `null` value which is used by the driver to represent the database NULL.
+//  * By default, JSON and JSONB columns use JSON.parse to parse a JSON column value
+//  * and this will lead to serde_json::Value::Null in Rust, which will be interpreted
+//  * as DbNull.
+//  *
+//  * By converting "null" to JsonNullMarker, we can signal JsonNull in Rust side and
+//  * convert it to QuaintValue::Json(Some(Null)).
+//  */
+// function toJson(json: string): unknown {
+//     return json === "null" ? JsonNullMarker : JSON.parse(json);
+// }
 
-setTypeParser(ScalarColumnType.JSONB, toJson);
-setTypeParser(ScalarColumnType.JSON, toJson);
+// setTypeParser(DataTypeOIDs.JSONB, toJson);
+// setTypeParser(DataTypeOIDs.JSON, toJson);
 
-/************************/
-/* Binary data handling */
-/************************/
+// /************************/
+// /* Binary data handling */
+// /************************/
 
-/**
- * TODO:
- * 1. Check if using base64 would be more efficient than this encoding.
- * 2. Consider the possibility of eliminating re-encoding altogether
- *    and passing bytea hex format to the engine if that can be aligned
- *    with other adapters of the same database provider.
- */
-function encodeBuffer(buffer: Buffer) {
-    return Array.from(new Uint8Array(buffer));
-}
+// /**
+//  * TODO:
+//  * 1. Check if using base64 would be more efficient than this encoding.
+//  * 2. Consider the possibility of eliminating re-encoding altogether
+//  *    and passing bytea hex format to the engine if that can be aligned
+//  *    with other adapters of the same database provider.
+//  */
+// function encodeBuffer(buffer: Buffer) {
+//     return Array.from(new Uint8Array(buffer));
+// }
 
-/*
- * BYTEA - arbitrary raw binary strings
- */
+// /*
+//  * BYTEA - arbitrary raw binary strings
+//  */
 
-const parsePgBytes = getTypeParser(ScalarColumnType.BYTEA) as (_: string) => Buffer;
-/**
- * Convert bytes to a JSON-encodable representation since we can't
- * currently send a parsed Buffer or ArrayBuffer across JS to Rust
- * boundary.
- */
-function convertBytes(serializedBytes: string): number[] {
-    const buffer = parsePgBytes(serializedBytes);
-    return encodeBuffer(buffer);
-}
+// const parsePgBytes = getTypeParser(DataTypeOIDs.BYTEA) as (_: string) => Buffer;
+// /**
+//  * Convert bytes to a JSON-encodable representation since we can't
+//  * currently send a parsed Buffer or ArrayBuffer across JS to Rust
+//  * boundary.
+//  */
+// function convertBytes(serializedBytes: string): number[] {
+//     const buffer = parsePgBytes(serializedBytes);
+//     return encodeBuffer(buffer);
+// }
 
-setTypeParser(ScalarColumnType.BYTEA, convertBytes);
+// setTypeParser(DataTypeOIDs.BYTEA, convertBytes);
 
-/*
- * BYTEA_ARRAY - arrays of arbitrary raw binary strings
- */
+// /*
+//  * BYTEA_ARRAY - arrays of arbitrary raw binary strings
+//  */
 
-const parseBytesArray = getTypeParser(ArrayColumnType.BYTEA_ARRAY) as (_: string) => Buffer[];
+// const parseBytesArray = getTypeParser(ArrayColumnType.BYTEA_ARRAY) as (_: string) => Buffer[];
 
-setTypeParser(ArrayColumnType.BYTEA_ARRAY, (serializedBytesArray) => {
-    const buffers = parseBytesArray(serializedBytesArray);
-    return buffers.map((buf) => (buf ? encodeBuffer(buf) : null));
-});
+// setTypeParser(ArrayColumnType.BYTEA_ARRAY, (serializedBytesArray) => {
+//     const buffers = parseBytesArray(serializedBytesArray);
+//     return buffers.map((buf) => (buf ? encodeBuffer(buf) : null));
+// });
 
-/* BIT_ARRAY, VARBIT_ARRAY */
+// /* BIT_ARRAY, VARBIT_ARRAY */
 
-function normalizeBit(bit: string): string {
-    return bit;
-}
+// function normalizeBit(bit: string): string {
+//     return bit;
+// }
 
-setTypeParser(ArrayColumnType.BIT_ARRAY, normalize_array(normalizeBit));
-setTypeParser(ArrayColumnType.VARBIT_ARRAY, normalize_array(normalizeBit));
+// setTypeParser(ArrayColumnType.BIT_ARRAY, normalize_array(normalizeBit));
+// setTypeParser(ArrayColumnType.VARBIT_ARRAY, normalize_array(normalizeBit));
 
-// https://github.com/brianc/node-postgres/pull/2930
-export function fixArrayBufferValues(values: unknown[]) {
-    for (let i = 0; i < values.length; i++) {
-        const list = values[i];
-        if (!Array.isArray(list)) {
-            continue;
-        }
+// // https://github.com/brianc/node-postgres/pull/2930
+// export function fixArrayBufferValues(values: unknown[]) {
+//     for (let i = 0; i < values.length; i++) {
+//         const list = values[i];
+//         if (!Array.isArray(list)) {
+//             continue;
+//         }
 
-        for (let j = 0; j < list.length; j++) {
-            const listItem = list[j];
-            if (ArrayBuffer.isView(listItem)) {
-                list[j] = Buffer.from(listItem.buffer, listItem.byteOffset, listItem.byteLength);
-            }
-        }
-    }
+//         for (let j = 0; j < list.length; j++) {
+//             const listItem = list[j];
+//             if (ArrayBuffer.isView(listItem)) {
+//                 list[j] = Buffer.from(listItem.buffer, listItem.byteOffset, listItem.byteLength);
+//             }
+//         }
+//     }
 
-    return values;
-}
+//     return values;
+// }

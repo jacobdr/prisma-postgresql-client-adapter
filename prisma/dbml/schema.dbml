@@ -1,0 +1,16 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table KitchenSink {
+  id String [unique, not null]
+  is_valid Boolean [not null]
+  count_int Int [not null]
+  count_bingint BigInt [not null]
+  count_float Float [not null]
+  count_decimal Decimal [not null]
+  datetime DateTime [not null]
+  timestamp_tz DateTime [not null]
+  time_without_zone DateTime [not null]
+  time_with_zone DateTime [not null]
+}
