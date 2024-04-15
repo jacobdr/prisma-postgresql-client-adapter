@@ -126,12 +126,13 @@ jobs:
             - name: Pre-Test - Docker Dependencies
               run: |
                   docker compose pull
-                  docker compose up --detch
+                  make docker-dependencies
                   if ./scripts/wait-for-it.sh -t 15 localhost:5432; then
                     echo "Dependencies are ready"
                     docker compose logs
                   else
                     echo "Database not online on localhost:5432"
+                    docker compose logs
                     exit 101
                   fi
 
