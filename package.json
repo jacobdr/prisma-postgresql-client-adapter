@@ -2,13 +2,19 @@
     "name": "@jacobdr/prisma-postgresql-client-adapter",
     "version": "0.0.1",
     "description": "",
-    "main": "index.js",
     "type": "module",
-    "keywords": [],
-    "author": "",
+    "keywords": [
+        "prisma",
+        "prisma adapter",
+        "postgresql"
+    ],
+    "author": "Jacob Roberts",
     "license": "ISC",
     "module": "./build/src/index.js",
     "typings": "./build/src/index.d.ts",
+    "repository": {
+        "url": "https://github.com/jacobdr/prisma-postgresql-client-adapter"
+    },
     "files": [
         "build/*",
         "build/**/*"
