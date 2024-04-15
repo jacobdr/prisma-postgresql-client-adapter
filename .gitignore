@@ -3,3 +3,4 @@ dist
 build
 tsconfig.tsbuildinfo
 junit-report.xml
+coverage/

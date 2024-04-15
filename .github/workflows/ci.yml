@@ -19,7 +19,7 @@ permissions:
     checks: write
     contents: read
     deployments: write
-    id-token: none
+    id-token: write
     packages: write
     pages: read
     statuses: write
@@ -137,8 +137,10 @@ jobs:
                     docker compose logs
                     exit 101
                   fi
+            #   https://github.com/marketplace/actions/vitest-coverage-report
             - name: Test
               run: |
+                  pnpm vitest --coverage.enabled true
                   pnpm run test
             # https://github.com/mikepenz/action-junit-report
             - name: Publish Test Report
@@ -149,8 +151,11 @@ jobs:
                   report_paths: "./junit-report.xml"
                   # Since not all packages have tests, this is not always true at the moment
                   require_passed_tests: true
-                  include_passed: true
+                  job_summary: true
                   detailed_summary: true
+            - name: "Report Coverage"
+              if: always()
+              uses: davelosert/vitest-coverage-report-action@v2
             # - name: Lint
             #   run: |
             #       pnpm run lint
