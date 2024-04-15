@@ -125,7 +125,16 @@ jobs:
                   pnpm run build
             - name: Pre-Test - Docker Dependencies
               run: |
-                  make docker-dependencies
+                  docker compose pull
+                  docker compose up --detch
+                  if ./scripts/wait-for-it.sh -t 15 localhost:5432; then
+                    echo "Dependencies are ready"
+                    docker compose logs
+                  else
+                    echo "Database not online on localhost:5432"
+                    exit 101
+                  fi
+
             - name: Test
               run: |
                   pnpm run test
