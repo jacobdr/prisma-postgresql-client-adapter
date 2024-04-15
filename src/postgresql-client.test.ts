@@ -1,7 +1,6 @@
+import { PrismaPg } from "./postgresql-client.js";
 import { Connection, Pool } from "postgresql-client";
 import { describe, test } from "vitest";
-
-import { PrismaPg } from "./postgresql-client.js";
 
 describe("validation", () => {
     test("throws if passed Client instance", ({ expect }) => {
