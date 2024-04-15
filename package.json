@@ -32,12 +32,12 @@
     "scripts": {
         "test": "vitest run",
         "build": "rm -rf build && pnpm run build:ts && pnpm run build:copy-static-files",
-        "build:ts": "pnpm tsc --build tsconfig.production-build.json && rm ./build/tsconfig.production-build.tsbuildinfo",
+        "build:ts": "prisma generate && tsc --build tsconfig.production-build.json && rm ./build/tsconfig.production-build.tsbuildinfo",
         "build:copy-static-files": "cp README.md CHANGELOG.md ./build",
         "format": "prettier --write --list-different .",
         "format:check": "prettier --check .",
-        "precompile": "pnpm exec prisma generate",
-        "compile": "pnpm tsc --build --verbose"
+        "precompile": "prisma generate",
+        "compile": "tsc --build --verbose"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"
