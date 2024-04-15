@@ -11,12 +11,10 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 ## Developer Commands
 
-## Run the local dev environment
-.PHONY: dev
-dev: docker-dependencies
-	pnpm --filter @nameplace/web exec prisma migrate dev
-	pnpm --filter @nameplace/web exec prisma db seed
-	pnpm run --recursive dev
+## Run Tests
+.PHONY: test
+test: docker-dependencies
+	pnpm test
 
 ## Format the repo
 .PHONY: format
@@ -25,8 +23,7 @@ format:
 
 ## Run just the docker depdendencies
 docker-dependencies:
-	# --detach
-	docker compose -f $(ROOT_DIR)/docker-compose.yaml up 
+	docker compose -f $(ROOT_DIR)/docker-compose.yaml up --detach
 
 
 ## Repo Setup
@@ -35,6 +32,7 @@ docker-dependencies:
 .PHONY: install
 install: setup-precommit
 	pnpm install
+	pnpm run precompile
 
 .PHONY: pre-commit
 setup-precommit:

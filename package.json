@@ -1,6 +1,6 @@
 {
-    "name": "prisma-postgresql-client-adapter",
-    "version": "1.0.0",
+    "name": "@jacobdr/prisma-postgresql-client-adapter",
+    "version": "0.0.1",
     "description": "",
     "main": "index.js",
     "type": "module",
