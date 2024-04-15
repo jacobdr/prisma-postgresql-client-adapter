@@ -21,19 +21,29 @@ generator dbml {
 
 // All types: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#model-field-scalar-types
 model KitchenSink {
-    id                String   @unique
-    is_valid          Boolean
-    count_int         Int
-    count_bingint     BigInt
-    count_float       Float
-    count_decimal     Decimal
-    datetime          DateTime
+    id                     String   @unique
+    is_valid               Boolean
+    count_int              Int
+    count_bingint          BigInt
+    count_float            Float
+    count_decimal          Decimal
+    datetime               DateTime
     // postgres custom types
     // https://www.prisma.io/docs/orm/overview/databases/postgresql#mapping-between-postgresql-database-column-types-to-prisma-orm-scalar-and-native-types
-    timestamp_tz      DateTime @db.Timestamptz()
-    time_without_zone DateTime @db.Time()
-    // This type is not supported by the driver
-    time_with_zone    DateTime @db.Timetz()
+    timestamp_tz           DateTime @db.Timestamptz()
+    time_without_zone      DateTime @db.Time()
+    xml                    String   @db.Xml()
+    int_int                Int      @db.Integer()
+    int_oid                Int      @db.Oid()
+    float_double_precision Float    @db.DoublePrecision()
+    float_real             Float    @db.Real()
+    json_json              Json
+    json_jsonb             Json     @db.JsonB()
+
+    // These types are not supported by the driver
+    time_with_zone DateTime @db.Timetz()
+    inet           String   @db.Inet()
+    small_int      Int      @db.SmallInt()
 
     // Postgres user table is special -- so we need
     // to rename it to app_users

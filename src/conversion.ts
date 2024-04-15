@@ -256,7 +256,7 @@ export function fieldToColumnType(fieldTypeId: number): ColumnType {
         case INTERNAL_DATATYPE_OIDS["TIMESTAMPTZ"]:
             return ColumnTypeEnum.DateTime;
         case INTERNAL_DATATYPE_OIDS["NUMERIC"]:
-        case INTERNAL_DATATYPE_OIDS["MONEY"]:
+            // case INTERNAL_DATATYPE_OIDS["MONEY"]:
             return ColumnTypeEnum.Numeric;
         case INTERNAL_DATATYPE_OIDS["JSON"]:
         case INTERNAL_DATATYPE_OIDS["JSONB"]:
@@ -268,10 +268,10 @@ export function fieldToColumnType(fieldTypeId: number): ColumnType {
         case INTERNAL_DATATYPE_OIDS["BPCHAR"]:
         case INTERNAL_DATATYPE_OIDS["TEXT"]:
         case INTERNAL_DATATYPE_OIDS["VARCHAR"]:
-        case INTERNAL_DATATYPE_OIDS["BIT"]:
-        case INTERNAL_DATATYPE_OIDS["VARBIT"]:
-        case INTERNAL_DATATYPE_OIDS["INET"]:
-        case INTERNAL_DATATYPE_OIDS["CIDR"]:
+        // case INTERNAL_DATATYPE_OIDS["BIT"]:
+        // case INTERNAL_DATATYPE_OIDS["VARBIT"]:
+        // case INTERNAL_DATATYPE_OIDS["INET"]:
+        // case INTERNAL_DATATYPE_OIDS["CIDR"]:
         case INTERNAL_DATATYPE_OIDS["XML"]:
             return ColumnTypeEnum.Text;
         case INTERNAL_DATATYPE_OIDS["BYTEA"]:
