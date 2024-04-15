@@ -11,5 +11,9 @@ export default defineConfig({
         env: {
             DATABASE_URL: "postgresql://postgres:password@localhost:5432/postgres",
         },
+        reporters: ["default", "junit"],
+        outputFile: {
+            junit: "./junit-report.xml",
+        },
     },
 } as const);

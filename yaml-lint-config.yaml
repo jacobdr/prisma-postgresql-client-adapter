@@ -1,0 +1,13 @@
+---
+yaml-files:
+    - "*.yaml"
+    - "*.yml"
+    - ".yamllint"
+
+ignore:
+    - pnpm-lock.yaml
+
+rules:
+    line-length:
+        max: 200
+    document-start: disable

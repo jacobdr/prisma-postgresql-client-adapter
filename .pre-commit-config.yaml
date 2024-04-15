@@ -1,0 +1,46 @@
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+          - id: check-yaml
+    - repo: https://github.com/rhysd/actionlint
+      rev: v1.6.26
+      hooks:
+          - id: actionlint
+            # disable shellcheck for now
+            args: ["-shellcheck", ""]
+    # https://yamllint.readthedocs.io/en/stable/integration.html
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.33.0
+      hooks:
+          - id: yamllint
+            args:
+                - --strict
+                - -c=./yaml-lint-config.yaml
+    # https://pre-commit.com/#creating-new-hooks
+    - repo: local
+      hooks:
+          - id: prettier
+            name: prettier
+            entry: pnpm prettier --write
+            language: system
+            files: '\.(ts|tsx|mts|mjs|yml|yaml|json|css)$'
+          # Compile typescript before push since it will fail CI anyway
+          - id: ts-compile
+            name: ts-compile
+            entry: pnpm tsc --build --verbose
+            language: system
+            files: '\.(ts|tsx|mts)$'
+            pass_filenames: false
+            stages:
+                - pre-push
+          # - id: check-project-dependency-uniformity
+          #   name: Enforce package.json constraints and uniformity
+          #   language: system
+          #   files: package.json
+          #   entry: pnpm syncpack lint
+          # - id: lint-docker
+          #   name: Lint Dockerfiles
+          #   language: system
+          #   files: Dockerfile
+          #   entry: ./dev/lint_dockerfiles.sh

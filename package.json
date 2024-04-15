@@ -28,7 +28,9 @@
         "build:ts": "pnpm tsc --build tsconfig.production-build.json && rm ./build/tsconfig.production-build.tsbuildinfo",
         "build:copy-static-files": "cp README.md CHANGELOG.md ./build",
         "format": "prettier --write --list-different .",
-        "format:check": "prettier --check ."
+        "format:check": "prettier --check .",
+        "precompile": "pnpm exec prisma generate",
+        "compile": "pnpm tsc --build --verbose"
     },
     "prisma": {
         "seed": "tsx prisma/seed.ts"

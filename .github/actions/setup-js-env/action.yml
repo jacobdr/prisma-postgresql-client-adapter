@@ -1,0 +1,59 @@
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
+name: Setup JS Environment
+description: |
+    Sets up NodeJS, pnpm, and installs dependencies
+inputs: {}
+outputs:
+    pnpm-cache-name:
+        description: |
+            Name of the cache where pnpm dependencies have been saved. Should be used by downstream
+            consumers to restore the cache if needed
+        value: ${{ steps.pnpm-cache-details.outputs.PNPM_CACHE_KEY }}
+runs:
+    using: "composite"
+    steps:
+        - name: Debug Workflow Context
+          shell: bash
+          # Useful for analyzing the workflow
+          # https://docs.github.com/en/actions/learn-github-actions/variables
+          # https://docs.github.com/en/actions/learn-github-actions/co
+          run: |
+              echo "Inputs JSON:"
+              printf '\n\n'
+              echo "${GITHUB_INPUTS_JSON}"
+        # https://github.com/actions/checkout
+        - uses: actions/checkout@v4
+          with:
+              ref: ${{ github.event.pull_request.head.sha }}
+              fetch-depth: 1
+        # https://github.com/actions/setup-node
+        - id: setup-node
+          uses: actions/setup-node@v4
+          with:
+              node-version-file: "package.json"
+        # https://github.com/pnpm/action-setup
+        - uses: pnpm/action-setup@v3
+          name: Install pnpm
+          with:
+              # version is read from the packageManger field of package.json when field is omitted
+              run_install: false
+        - name: Get pnpm store directory
+          id: pnpm-cache-details
+          shell: bash
+          run: |
+              echo "STORE_PATH=$(pnpm store path --silent)" >> ${GITHUB_OUTPUT}
+              CACHE_TYPE_PREFIX="all"
+              PNPM_CACHE_KEY="${{ runner.os }}-pnpm-store-${CACHE_TYPE_PREFIX}-${{ hashFiles('**/pnpm-lock.yaml') }}"
+              echo "PNPM_CACHE_KEY=${PNPM_CACHE_KEY}" >> ${GITHUB_OUTPUT}
+        # https://github.com/actions/cache
+        - name: Setup pnpm cache
+          uses: actions/cache@v4
+          with:
+              path: ${{ steps.pnpm-cache-details.outputs.STORE_PATH }}
+              key: ${{ steps.pnpm-cache-details.outputs.PNPM_CACHE_KEY }}
+              restore-keys: |
+                  ${{ runner.os }}-pnpm-store-
+        - name: Install Dependencies
+          shell: bash
+          run: |
+              pnpm install
