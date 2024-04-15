@@ -276,45 +276,45 @@ export function fieldToColumnType(fieldTypeId: number): ColumnType {
             return ColumnTypeEnum.Text;
         case INTERNAL_DATATYPE_OIDS["BYTEA"]:
             return ColumnTypeEnum.Bytes;
-        case ArrayColumnType.INT2_ARRAY:
-        case ArrayColumnType.INT4_ARRAY:
-            return ColumnTypeEnum.Int32Array;
-        case ArrayColumnType.FLOAT4_ARRAY:
-            return ColumnTypeEnum.FloatArray;
-        case ArrayColumnType.FLOAT8_ARRAY:
-            return ColumnTypeEnum.DoubleArray;
-        case ArrayColumnType.NUMERIC_ARRAY:
-        case ArrayColumnType.MONEY_ARRAY:
-            return ColumnTypeEnum.NumericArray;
-        case ArrayColumnType.BOOL_ARRAY:
-            return ColumnTypeEnum.BooleanArray;
-        case ArrayColumnType.CHAR_ARRAY:
-            return ColumnTypeEnum.CharacterArray;
-        case ArrayColumnType.BPCHAR_ARRAY:
-        case ArrayColumnType.TEXT_ARRAY:
-        case ArrayColumnType.VARCHAR_ARRAY:
-        case ArrayColumnType.VARBIT_ARRAY:
-        case ArrayColumnType.BIT_ARRAY:
-        case ArrayColumnType.INET_ARRAY:
-        case ArrayColumnType.CIDR_ARRAY:
-        case ArrayColumnType.XML_ARRAY:
-            return ColumnTypeEnum.TextArray;
-        case ArrayColumnType.DATE_ARRAY:
-            return ColumnTypeEnum.DateArray;
-        case ArrayColumnType.TIME_ARRAY:
-            return ColumnTypeEnum.TimeArray;
-        case ArrayColumnType.TIMESTAMP_ARRAY:
-            return ColumnTypeEnum.DateTimeArray;
-        case ArrayColumnType.JSON_ARRAY:
-        case ArrayColumnType.JSONB_ARRAY:
-            return ColumnTypeEnum.JsonArray;
-        case ArrayColumnType.BYTEA_ARRAY:
-            return ColumnTypeEnum.BytesArray;
-        case ArrayColumnType.UUID_ARRAY:
-            return ColumnTypeEnum.UuidArray;
-        case ArrayColumnType.INT8_ARRAY:
-        case ArrayColumnType.OID_ARRAY:
-            return ColumnTypeEnum.Int64Array;
+        // case ArrayColumnType.INT2_ARRAY:
+        // case ArrayColumnType.INT4_ARRAY:
+        //     return ColumnTypeEnum.Int32Array;
+        // case ArrayColumnType.FLOAT4_ARRAY:
+        //     return ColumnTypeEnum.FloatArray;
+        // case ArrayColumnType.FLOAT8_ARRAY:
+        //     return ColumnTypeEnum.DoubleArray;
+        // case ArrayColumnType.NUMERIC_ARRAY:
+        // case ArrayColumnType.MONEY_ARRAY:
+        //     return ColumnTypeEnum.NumericArray;
+        // case ArrayColumnType.BOOL_ARRAY:
+        //     return ColumnTypeEnum.BooleanArray;
+        // case ArrayColumnType.CHAR_ARRAY:
+        //     return ColumnTypeEnum.CharacterArray;
+        // case ArrayColumnType.BPCHAR_ARRAY:
+        // case ArrayColumnType.TEXT_ARRAY:
+        // case ArrayColumnType.VARCHAR_ARRAY:
+        // case ArrayColumnType.VARBIT_ARRAY:
+        // case ArrayColumnType.BIT_ARRAY:
+        // case ArrayColumnType.INET_ARRAY:
+        // case ArrayColumnType.CIDR_ARRAY:
+        // case ArrayColumnType.XML_ARRAY:
+        //     return ColumnTypeEnum.TextArray;
+        // case ArrayColumnType.DATE_ARRAY:
+        //     return ColumnTypeEnum.DateArray;
+        // case ArrayColumnType.TIME_ARRAY:
+        //     return ColumnTypeEnum.TimeArray;
+        // case ArrayColumnType.TIMESTAMP_ARRAY:
+        //     return ColumnTypeEnum.DateTimeArray;
+        // case ArrayColumnType.JSON_ARRAY:
+        // case ArrayColumnType.JSONB_ARRAY:
+        //     return ColumnTypeEnum.JsonArray;
+        // case ArrayColumnType.BYTEA_ARRAY:
+        //     return ColumnTypeEnum.BytesArray;
+        // case ArrayColumnType.UUID_ARRAY:
+        //     return ColumnTypeEnum.UuidArray;
+        // case ArrayColumnType.INT8_ARRAY:
+        // case ArrayColumnType.OID_ARRAY:
+        //     return ColumnTypeEnum.Int64Array;
         default:
             // Postgres custom types (types that come from extensions and user's enums).
             // We don't use `ColumnTypeEnum.Enum` for enums here and defer the decision to
