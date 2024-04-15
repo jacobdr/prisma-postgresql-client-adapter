@@ -156,6 +156,12 @@ jobs:
             - name: "Report Coverage"
               if: always()
               uses: davelosert/vitest-coverage-report-action@v2
+            #   with:
+            #   json-summary-compare-path: coverage/coverage-summary.json
             # - name: Lint
             #   run: |
             #       pnpm run lint
+            - name: Clean Up
+              if: always()
+              run: |
+                  docker compose down --remove-orphans
