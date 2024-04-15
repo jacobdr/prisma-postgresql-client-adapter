@@ -1,61 +1,61 @@
 {
-    "name": "prisma-postgresql-client-adapter",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "type": "module",
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "module": "./build/src/index.js",
-    "typings": "./build/src/index.d.ts",
-    "files": [
-        "build/*",
-        "build/**/*"
-    ],
-    "exports": {
-        "./package.json": "./build/package.json",
-        ".": {
-            "import": {
-                "types": "./build/src/index.d.ts",
-                "default": "./build/src/index.js"
-            }
-        }
-    },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "rm -rf build && pnpm run build:ts && pnpm run build:copy-static-files",
-        "build:ts": "pnpm tsc --build tsconfig.production-build.json && rm ./build/tsconfig.production-build.tsbuildinfo",
-        "build:copy-static-files": "cp README.md CHANGELOG.md ./build"
-    },
-    "prisma": {
-        "seed": "tsx prisma/seed.ts"
-    },
-    "engines": {
-        "node": ">=20.0",
-        "npm": ">=10.0.0"
-    },
-    "dependencies": {
-        "@prisma/client": "5.12.1",
-        "@prisma/driver-adapter-utils": "^5.12.1",
-        "luxon": "^3.4.4",
-        "postgres-array": "^3.0.2"
-    },
-    "devDependencies": {
-        "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-        "@types/luxon": "^3.4.2",
-        "@types/node": "^20.12.7",
-        "postgresql-client": "^2.10.6",
-        "prettier": "^3.2.5",
-        "prisma": "^5.12.1",
-        "prisma-dbml-generator": "^0.12.0",
-        "tsx": "^4.7.2",
-        "typescript": "^5.4.5",
-        "vite-tsconfig-paths": "^4.3.2",
-        "vitest": "^1.5.0",
-        "zx": "^8.0.1"
-    },
-    "peerDependencies": {
-        "postgresql-client": "^2.10.6"
+  "name": "prisma-postgresql-client-adapter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "module": "./build/src/index.js",
+  "typings": "./build/src/index.d.ts",
+  "files": [
+    "build/*",
+    "build/**/*"
+  ],
+  "exports": {
+    "./package.json": "./build/package.json",
+    ".": {
+      "import": {
+        "types": "./build/src/index.d.ts",
+        "default": "./build/src/index.js"
+      }
     }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "build": "rm -rf build && pnpm run build:ts && pnpm run build:copy-static-files",
+    "build:ts": "pnpm tsc --build tsconfig.production-build.json && rm ./build/tsconfig.production-build.tsbuildinfo",
+    "build:copy-static-files": "cp README.md CHANGELOG.md ./build"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=20.0",
+    "npm": ">=10.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "5.12.1",
+    "@prisma/driver-adapter-utils": "^5.12.1",
+    "postgres-array": "^3.0.2"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^20.12.7",
+    "luxon": "^3.4.4",
+    "postgresql-client": "^2.10.6",
+    "prettier": "^3.2.5",
+    "prisma": "^5.12.1",
+    "prisma-dbml-generator": "^0.12.0",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^1.5.0",
+    "zx": "^8.0.1"
+  },
+  "peerDependencies": {
+    "postgresql-client": "^2.10.6"
+  }
 }
